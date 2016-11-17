@@ -10,8 +10,8 @@ namespace ExpressionCalculator {
         /// Handler for the caret position
         /// </summary>
         private struct Position {
-            private int x;
-            private int y;
+            private int x_o, y_o, x, y;
+
             public int X {
                 get { return x; }
                 set {
@@ -37,15 +37,49 @@ namespace ExpressionCalculator {
             /// <param name="x"></param>
             /// <param name="y"></param>
             public Position( int x , int y ) {
+                this.x = this.x_o = x;
+                this.y = this.y_o = y;
+            }
+        }
+
+        private struct CaretPosition {
+            private int x,y;
+
+            public int X {
+                get { return x; }
+                set { x = value; }
+            }
+            public int Y {
+                get { return y; }
+                set { y = value; }
+            }
+
+            public CaretPosition( int x , int y ) {
                 this.x = x;
                 this.y = y;
+            }
+
+            public static CaretPosition operator -( Position A , CaretPosition B ) {
+                return new CaretPosition( A.X - B.X , A.X - B.Y );
+            }
+
+            public static CaretPosition operator +( Position A , CaretPosition B ) {
+                return new CaretPosition( A.X + B.X , A.X + B.Y );
+            }
+
+            public static CaretPosition operator -( CaretPosition A , Position B ) {
+                return new CaretPosition( A.X - B.X , A.X - B.Y );
+            }
+
+            public static CaretPosition operator +( CaretPosition A , Position B ) {
+                return new CaretPosition( A.X + B.X , A.X + B.Y );
             }
         }
 
         /// <summary>
-        /// The cursor should be at this position.
+        /// This is where the current screen cursor is located.
         /// </summary>
-        private Position Cursor;
+        private static Position Cursor = new Position( Console.CursorLeft , Console.CursorTop );
 
         /// <summary>
         /// This is where it writes characters
@@ -53,12 +87,23 @@ namespace ExpressionCalculator {
         private StringBuilder Builder;
 
         /// <summary>
+        /// The start of the builder
+        /// </summary>
+        private CaretPosition Start;
+
+        /// <summary>
+        /// The end of the builder
+        /// </summary>
+        private CaretPosition End;
+
+        /// <summary>
         /// CaretWriter. For specialized input. Still under testing/writing. Takes a StringBuilder as a parameter.
         /// </summary>
         /// <param name="b"></param>
-        public CaretWriter( StringBuilder b ) {
-            this.Builder = b;
-            this.Cursor = new Position( Console.CursorLeft , Console.CursorTop );
+        public CaretWriter() {
+            this.Builder = new StringBuilder();
+            this.Start = new CaretPosition( Cursor.X , Cursor.Y );
+            this.End = this.Start;
         }
 
         /// <summary>
@@ -66,7 +111,9 @@ namespace ExpressionCalculator {
         /// </summary>
         public void BackSpace() {
             try {
-                this.Builder.Remove( Cursor.X - 1 , 1 );
+                var span = Cursor - Start;
+                this.Builder.Remove( span.X - 1 , 1 );
+                this.End.X -= 1;
             } catch( Exception ) {
                 //Do Nothing
             } finally {
@@ -82,6 +129,8 @@ namespace ExpressionCalculator {
         public void NewLine() {
             Cursor.Y += 1;
             Cursor.X = 0;
+            End.Y += 1;
+            End.X = 0;
         }
 
         /// <summary>
@@ -89,7 +138,8 @@ namespace ExpressionCalculator {
         /// </summary>
         public void Left() {
             try {
-                Cursor.X -= 1;
+                if( Cursor.X > this.Start.X )
+                    Cursor.X -= 1;
             } catch( Exception ) {
                 return;
             }
@@ -100,7 +150,7 @@ namespace ExpressionCalculator {
         /// </summary>
         public void Right() {
             try {
-                if( Cursor.X < this.Builder.Length )
+                if( Cursor.X < this.End.X )
                     Cursor.X += 1;
             } catch( Exception ) {
                 return;
@@ -112,12 +162,23 @@ namespace ExpressionCalculator {
         /// </summary>
         /// <param name="c"></param>
         public void Write( Character c ) {
-            if( Cursor.X >= this.Builder.Length )
+            if( Cursor.X >= this.End.X ) {
                 this.Builder.Append( c );
-            else
-                this.Builder.Remove( Cursor.X , 1 ).Insert( Cursor.X , c );
+                this.End.X += 1;
+            } else {
+                var span = Cursor - Start;
+                this.Builder.Remove( span.X , 1 ).Insert( span.X , c );
+            }
             Console.Out.Write( c );
             Cursor.X += 1;
+        }
+
+        public static implicit operator StringBuilder( CaretWriter A ) {
+            return A.Builder;
+        }
+
+        public override string ToString() {
+            return this.Builder.Replace( ' ' , '\b' ).ToString();
         }
     }
 }

@@ -11,14 +11,13 @@ namespace ExpressionCalculator.EntryRunner {
         public static void Main( string[ ] args ) {
             Character c = '\0';
             Dictionary<Character, int> Variables = new Dictionary<Character, int>();
-            StringBuilder build = new StringBuilder();
             ConsoleKeyInfo Info;
             Func<ConsoleKeyInfo> Get = () => {
                 var pressed = Console.ReadKey(true);
                 c = pressed.KeyChar;
                 return pressed;
             };
-            CaretWriter caret = new CaretWriter(build);
+            CaretWriter caret = new CaretWriter();
             while( ( Info = Get() ).Key != ConsoleKey.Enter ) {
                 if( !char.IsWhiteSpace( c ) && !char.IsControl( c ) && char.GetUnicodeCategory( c ) != UnicodeCategory.OtherPunctuation ) {
                     caret.Write( c );
@@ -46,6 +45,7 @@ namespace ExpressionCalculator.EntryRunner {
                 }
             }
             Console.Write( '\n' );
+            StringBuilder build = caret;
             Console.WriteLine( build.ToString() );
             Console.Read();
         }
