@@ -67,6 +67,26 @@ namespace ExpressionCalculator {
 
     public class Entry {
 
+        public static Dictionary<int[], String> Pars = new Dictionary<int[], string>();
+        //TODO 
+        public static String GroupPar(String x) {
+            
+            int[] ParIndex = new int[2];
+
+            if (x.Contains("(")) {
+                ParIndex[0] = x.LastIndexOf("(");
+                ParIndex[1] = x.IndexOf(")") - x.LastIndexOf("(") + 1;
+                String Par = x.Substring(ParIndex[0], ParIndex[1]);
+
+                Pars.Add(ParIndex, Par);
+                Console.WriteLine(Par);
+            }
+            //NewS will be a new string with the last group of parenthesis removed and a placeholder in its spot
+            String NewS = "("; //Just for testing
+
+            return (x.Contains("(")) ? GroupPar(NewS) : NewS;
+        }
+
         public static void Main( string[ ] args ) {
             Character c = '\0';
             Dictionary<Character, int> Variables = new Dictionary<Character, int>();
@@ -90,6 +110,10 @@ namespace ExpressionCalculator {
                     break;
                 }
             }
+
+            GroupPar(build.ToString());
+            //TODO Replace the placeholders for the groups of parenthesis with the values from Par dictionary
+
             Console.Read();
         }
     }
