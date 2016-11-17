@@ -47,6 +47,10 @@ namespace ExpressionCalculator.EntryRunner {
             Console.Write( '\n' );
             StringBuilder build = caret;
             Console.WriteLine( build.ToString() );
+
+            Formatting.GroupPar(build.ToString());
+            //TODO Replace the placeholders for the groups of parenthesis with the values from Par dictionary
+
             Console.Read();
         }
     }
