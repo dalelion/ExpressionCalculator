@@ -19,12 +19,8 @@ namespace ExpressionCalculator.EntryRunner {
             };
             CaretWriter caret = new CaretWriter();
             while( ( Info = Get() ).Key != ConsoleKey.Enter ) {
-                if( !char.IsWhiteSpace( c ) && !char.IsControl( c ) && char.GetUnicodeCategory( c ) != UnicodeCategory.OtherPunctuation ) {
-                    caret.Write( c );
-                }
                 switch( Info.Key ) {
                     case ConsoleKey.Backspace:
-
                         caret.BackSpace();
                         break;
 
@@ -39,16 +35,33 @@ namespace ExpressionCalculator.EntryRunner {
                     case ConsoleKey.RightArrow:
                         caret.Right();
                         break;
+                    /*
+                case ConsoleKey.D9:
+                    caret = new CaretWriter( caret );
+                    caret.Write( c );
+                    continue;
 
+                case ConsoleKey.D0:
+                    caret.Write( c );
+                    var current = caret;
+                    caret = caret.EndOfCaret();
+                    caret.NewLine();
+                    Console.Write( current );
+                    current.Last();
+                    continue;
+                    */
                     default:
                         break;
+                }
+                if( !char.IsWhiteSpace( c ) && !char.IsControl( c ) && char.GetUnicodeCategory( c ) != UnicodeCategory.OtherPunctuation ) {
+                    caret.Write( c );
                 }
             }
             Console.Write( '\n' );
             StringBuilder build = caret;
             Console.WriteLine( build.ToString() );
 
-            Formatting.GroupPar(build.ToString());
+            Formatting.GroupPar( build.ToString() );
             //TODO Replace the placeholders for the groups of parenthesis with the values from Par dictionary
 
             Console.Read();

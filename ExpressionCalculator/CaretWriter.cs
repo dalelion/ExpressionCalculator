@@ -74,6 +74,10 @@ namespace ExpressionCalculator {
             public static CaretPosition operator +( CaretPosition A , Position B ) {
                 return new CaretPosition( A.X + B.X , A.X + B.Y );
             }
+
+            public static implicit operator CaretPosition( Position A ) {
+                return new CaretPosition( A.X , A.Y );
+            }
         }
 
         /// <summary>
@@ -96,13 +100,23 @@ namespace ExpressionCalculator {
         /// </summary>
         private CaretPosition End;
 
+        private CaretWriter old;
+
         /// <summary>
         /// CaretWriter. For specialized input. Still under testing/writing. Takes a StringBuilder as a parameter.
         /// </summary>
         /// <param name="b"></param>
         public CaretWriter() {
+            this.old = null;
             this.Builder = new StringBuilder();
             this.Start = new CaretPosition( Cursor.X , Cursor.Y );
+            this.End = this.Start;
+        }
+
+        public CaretWriter( CaretWriter caret ) {
+            this.old = caret;
+            this.Builder = new StringBuilder();
+            this.Start = new CaretPosition( caret.End.X , caret.End.Y );
             this.End = this.Start;
         }
 
@@ -129,8 +143,11 @@ namespace ExpressionCalculator {
         public void NewLine() {
             Cursor.Y += 1;
             Cursor.X = 0;
-            End.Y += 1;
-            End.X = 0;
+        }
+
+        public void Last() {
+            Cursor.Y -= 1;
+            Cursor.X = End.X;
         }
 
         /// <summary>
@@ -171,6 +188,11 @@ namespace ExpressionCalculator {
             }
             Console.Out.Write( c );
             Cursor.X += 1;
+        }
+
+        public CaretWriter EndOfCaret() {
+            this.End = Cursor;
+            return this.old;
         }
 
         public static implicit operator StringBuilder( CaretWriter A ) {
